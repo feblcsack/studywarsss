@@ -1,18 +1,22 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from '@/components/ui/toaster';
 
-const inter = Inter({ 
+const ibmPlexMono = IBM_Plex_Mono({ 
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700'], // kasih opsi sesuai kebutuhan
   display: 'swap',
-  variable: '--font-inter',
+  variable: '--font-ibm-plex-mono',
 });
 
 export const metadata: Metadata = {
   title: 'Alterian Tracker',
   description: 'A beautiful study tracking app with GitHub-style activity visualization',
+  icons: {
+    icon: "/kucing.jpeg"
+  }
 };
 
 export default function RootLayout({
@@ -21,8 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className={`${inter.className} antialiased`}>
+    <html lang="en" className={ibmPlexMono.variable}>
+      <body className={`${ibmPlexMono.className} antialiased`}>
         <AuthProvider>
           {children}
           <Toaster />

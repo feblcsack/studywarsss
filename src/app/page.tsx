@@ -10,7 +10,7 @@ import AuthDialog from '@/components/AuthDialog';
 import StudyHeatmap from '@/components/StudyHeatmap';
 import StatsCards from '@/components/StatsCards';
 import SettingsDialog from "@/components/SettingsDialog";
-import { Spotlight } from '@/components/ui/spotlight-new';
+import { cn } from "@/lib/utils";
 
 export default function Home() {
   const { user, logout } = useAuth();
@@ -59,17 +59,26 @@ export default function Home() {
     setCurrentSessionMinutes(0);
   };
 
+  // Grid Background Component
+  const GridBackground = () => (
+    <>
+      <div
+        className={cn(
+          "absolute inset-0",
+          "[background-size:40px_40px]",
+          "[background-image:linear-gradient(to_right,#334155_1px,transparent_1px),linear-gradient(to_bottom,#334155_1px,transparent_1px)]"
+        )}
+      />
+      {/* Radial gradient for the container to give a faded look */}
+      <div className="pointer-events-none absolute inset-0 bg-slate-900 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
+    </>
+  );
+
   if (!user) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center relative overflow-hidden">
-        {/* Spotlight Background */}
-        <Spotlight 
-          gradientFirst="radial-gradient(68.54% 68.72% at 55.02% 31.46%, hsla(272, 100%, 85%, .08) 0, hsla(272, 100%, 55%, .02) 50%, hsla(272, 100%, 45%, 0) 80%)"
-          gradientSecond="radial-gradient(50% 50% at 50% 50%, hsla(272, 100%, 85%, .06) 0, hsla(272, 100%, 55%, .02) 80%, transparent 100%)"
-          gradientThird="radial-gradient(50% 50% at 50% 50%, hsla(272, 100%, 85%, .04) 0, hsla(272, 100%, 45%, .02) 80%, transparent 100%)"
-          duration={8}
-          xOffset={120}
-        />
+        {/* Grid Background */}
+        <GridBackground />
         
         <Card className="w-96 bg-slate-800/50 border-slate-700/50 backdrop-blur-sm relative z-50">
           <CardHeader>
@@ -96,14 +105,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-900 text-white relative overflow-hidden">
-      {/* Spotlight Background */}
-      <Spotlight 
-        gradientFirst="radial-gradient(68.54% 68.72% at 55.02% 31.46%, hsla(160, 100%, 85%, .08) 0, hsla(160, 100%, 55%, .02) 50%, hsla(160, 100%, 45%, 0) 80%)"
-        gradientSecond="radial-gradient(50% 50% at 50% 50%, hsla(160, 100%, 85%, .06) 0, hsla(160, 100%, 55%, .02) 80%, transparent 100%)"
-        gradientThird="radial-gradient(50% 50% at 50% 50%, hsla(160, 100%, 85%, .04) 0, hsla(160, 100%, 45%, .02) 80%, transparent 100%)"
-        duration={10}
-        xOffset={80}
-      />
+      {/* Grid Background */}
+      <div className="fixed inset-0 z-0">
+        <GridBackground />
+      </div>
 
       {/* Header */}
       <header className="p-6 flex justify-between items-center relative z-50">

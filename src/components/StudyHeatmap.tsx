@@ -2,7 +2,6 @@
 import { useStudyData } from '@/hooks/useStudyData';
 import { format, getDay } from 'date-fns';
 
-const MONTHS = ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'];
 const DAYS = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
 interface StudyHeatmapProps {
@@ -29,17 +28,12 @@ export default function StudyHeatmap({ currentSessionMinutes = 0 }: StudyHeatmap
   // Calculate level based on total minutes including current session
   const calculateLevelWithCurrentSession = (totalMinutes: number, isToday: boolean) => {
     const adjustedMinutes = isToday ? totalMinutes + currentSessionMinutes : totalMinutes;
-    
-    // Return 0 if no study time at all
     if (adjustedMinutes === 0) return 0;
-    
-    // Start from level 1 only when there's actual study time
     let level = 1;
     if (adjustedMinutes >= 30) level = 2;
     if (adjustedMinutes >= 60) level = 3;
     if (adjustedMinutes >= 120) level = 4;
     if (adjustedMinutes >= 180) level = 5;
-    
     return level;
   };
 
@@ -47,7 +41,6 @@ export default function StudyHeatmap({ currentSessionMinutes = 0 }: StudyHeatmap
   const updatedHeatmapData = heatmapData.map(day => {
     const today = format(new Date(), 'yyyy-MM-dd');
     const isToday = day.date === today;
-    
     if (isToday && currentSessionMinutes > 0) {
       const newLevel = calculateLevelWithCurrentSession(day.totalMinutes, true);
       return {
@@ -56,39 +49,43 @@ export default function StudyHeatmap({ currentSessionMinutes = 0 }: StudyHeatmap
         totalMinutes: day.totalMinutes + currentSessionMinutes
       };
     }
-    
     return day;
   });
 
   // Group days by weeks
   const weeks: Array<Array<any>> = [];
   let currentWeek: Array<any> = [];
- 
   updatedHeatmapData.forEach((day, index) => {
     const dayOfWeek = getDay(new Date(day.date));
-   
     if (index === 0) {
-      // Fill empty days at the beginning of the first week
       for (let i = 0; i < dayOfWeek; i++) {
         currentWeek.push(null);
       }
     }
-   
     currentWeek.push(day);
-   
     if (currentWeek.length === 7) {
       weeks.push(currentWeek);
       currentWeek = [];
     }
   });
- 
   if (currentWeek.length > 0) {
-    // Fill empty days at the end of the last week
     while (currentWeek.length < 7) {
       currentWeek.push(null);
     }
     weeks.push(currentWeek);
   }
+
+  // Generate dynamic months from data
+  const monthLabels: { index: number; label: string }[] = [];
+  weeks.forEach((week, weekIndex) => {
+    const firstDay = week.find(d => d !== null);
+    if (firstDay) {
+      const month = format(new Date(firstDay.date), 'MMM');
+      if (!monthLabels.find(m => m.label === month)) {
+        monthLabels.push({ index: weekIndex, label: month });
+      }
+    }
+  });
 
   // Calculate total minutes including current session
   const totalMinutes = stats.totalMinutes + currentSessionMinutes;
@@ -96,18 +93,26 @@ export default function StudyHeatmap({ currentSessionMinutes = 0 }: StudyHeatmap
 
   return (
     <div className="w-full bg-slate-900/90 p-4 sm:p-6 lg:p-8 rounded-lg border border-slate-700/50">
-      {/* Month headers */}
+      {/* Dynamic Month headers - perfectly aligned */}
       <div className="mb-3 sm:mb-4 ml-4 sm:ml-7">
-        <div className="grid grid-cols-12 gap-1 text-xs text-slate-400">
-          {MONTHS.map(month => (
-            <div key={month} className="text-center text-xs sm:text-sm">{month}</div>
-          ))}
+        <div
+          className="grid gap-1 text-xs text-slate-400"
+          style={{ gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}
+        >
+          {weeks.map((_, weekIndex) => {
+            const month = monthLabels.find(m => m.index === weekIndex);
+            return (
+              <div key={weekIndex} className="text-center text-xs sm:text-sm">
+                {month ? month.label : ''}
+              </div>
+            );
+          })}
         </div>
       </div>
-      
+
       <div className="flex">
         {/* Day labels */}
-        <div className="flex flex-col gap-1 mr-2 sm:mr-3">
+        <div className="flex flex-col gap-1 mr-2 sm:mr-3 flex-shrink-0">
           {DAYS.map((day, index) => (
             <div
               key={day}
@@ -117,23 +122,32 @@ export default function StudyHeatmap({ currentSessionMinutes = 0 }: StudyHeatmap
             </div>
           ))}
         </div>
-        
-        {/* Heatmap grid */}
-        <div className="flex gap-1 overflow-x-auto">
+
+        {/* Heatmap grid - FIXED: Using grid with 1fr for perfect alignment */}
+        <div
+          className="grid gap-1 flex-1"
+          style={{ gridTemplateColumns: `repeat(${weeks.length}, 1fr)` }}
+        >
           {weeks.map((week, weekIndex) => (
-            <div key={weekIndex} className="flex flex-col gap-1 flex-shrink-0">
+            <div key={weekIndex} className="flex flex-col gap-1">
               {week.map((day, dayIndex) => {
                 const today = format(new Date(), 'yyyy-MM-dd');
                 const isToday = day?.date === today;
                 const isCurrentSession = isToday && currentSessionMinutes > 0;
-                
                 return (
                   <div
-                    key={dayIndex}
-                    className={`w-2 h-2 sm:w-3 sm:h-3 rounded-sm border border-slate-600/20 ${
+                    key={`${weekIndex}-${dayIndex}`}
+                    className={`aspect-square rounded-sm border border-slate-600/20 ${
                       day ? getLevelColor(day.level) : 'bg-slate-800/40'
-                    } ${isCurrentSession ? 'ring-1 ring-emerald-300/70' : ''} hover:ring-1 hover:ring-slate-400/50 cursor-pointer transition-all duration-150`}
-                    title={day ? `${day.date}: ${day.totalMinutes} minutes${isCurrentSession ? ' (including current session)' : ''}` : ''}
+                    } ${isCurrentSession ? 'ring-1 ring-emerald-300/70' : ''} 
+                    hover:ring-1 hover:ring-slate-400/50 cursor-pointer transition-all duration-150`}
+                    title={
+                      day
+                        ? `${day.date}: ${day.totalMinutes} minutes${
+                            isCurrentSession ? ' (including current session)' : ''
+                          }`
+                        : ''
+                    }
                   />
                 );
               })}
@@ -141,7 +155,7 @@ export default function StudyHeatmap({ currentSessionMinutes = 0 }: StudyHeatmap
           ))}
         </div>
       </div>
-      
+
       {/* Footer stats and legend */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-4 sm:mt-6 gap-3 sm:gap-0">
         <div className="text-xs sm:text-sm text-slate-400">
