@@ -12,7 +12,7 @@ import StudyHeatmap from '@/components/StudyHeatmap';
 import StatsCards from '@/components/StatsCards';
 import SettingsDialog from '@/components/SettingsDialog';
 import { cn } from '@/lib/utils';
-import { BrainCircuit, ArrowRight } from 'lucide-react';
+import { BrainCircuit, ArrowRight, LogOut } from 'lucide-react';
 
 export default function Home() {
   const { user, logout } = useAuth();
@@ -185,9 +185,13 @@ export default function Home() {
           <Button variant="ghost" size="icon" onClick={() => setShowSettingsDialog(true)} className="hover:bg-slate-700/50">
             <Settings className="h-4 w-4" />
           </Button>
-          <Button variant="outline" onClick={logout} className="border-slate-600 hover:bg-slate-700/50">
-            Logout
-          </Button>
+          <Button 
+  variant="outline"
+  onClick={logout}
+  className="border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors h-9 text-sm"
+>
+  <LogOut className="h-4 w-4" />
+</Button>
         </div>
       </header>
 
