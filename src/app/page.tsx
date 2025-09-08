@@ -12,6 +12,7 @@ import StudyHeatmap from '@/components/StudyHeatmap';
 import StatsCards from '@/components/StatsCards';
 import SettingsDialog from '@/components/SettingsDialog';
 import { cn } from '@/lib/utils';
+import { BrainCircuit, ArrowRight } from 'lucide-react';
 
 export default function Home() {
   const { user, logout } = useAuth();
@@ -141,20 +142,33 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center relative overflow-hidden">
         <GridBackground />
-        <Card className="w-96 bg-slate-800/50 border-slate-700/50 backdrop-blur-sm relative z-50">
-          <CardHeader>
-            <CardTitle className="text-center text-white">Study Tracker</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-slate-300 mb-6">Track your learning journey with beautiful visualizations</p>
-            <Button
-              onClick={() => setShowAuthDialog(true)}
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-            >
-              Get Started
-            </Button>
-          </CardContent>
-        </Card>
+        <Card className="w-full max-w-md bg-slate-800/60 border-slate-700/50 backdrop-blur-lg rounded-2xl shadow-2xl relative z-50 transition-all hover:border-blue-500/50">
+  <CardContent className="p-10 text-center flex flex-col items-center">
+    {/* Ikon untuk visual yang lebih menarik */}
+    <div className="p-3 bg-slate-700/50 rounded-full border border-slate-600 mb-6">
+      <BrainCircuit className="h-8 w-8 text-blue-400" />
+    </div>
+
+    {/* Judul dengan branding yang konsisten */}
+    <h1 className="text-4xl font-bold text-white mb-3">
+      Study <span className="text-blue-400">War!</span>
+    </h1>
+
+    {/* Deskripsi yang lebih halus */}
+    <p className="text-slate-400 mb-8 max-w-xs">
+      Track your learning journey, stay focused, and conquer your goals.
+    </p>
+
+    {/* Tombol CTA dengan style baru yang konsisten */}
+    <Button
+      onClick={() => setShowAuthDialog(true)}
+      className="w-full h-12 text-base font-semibold bg-blue-600 hover:bg-blue-700 transition-all transform active:scale-95 group"
+    >
+      Get Started
+      <ArrowRight className="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1" />
+    </Button>
+  </CardContent>
+</Card>
         <AuthDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
       </div>
     );
