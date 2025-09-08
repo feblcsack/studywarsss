@@ -1,4 +1,3 @@
-// hooks/useStudyData.ts
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -63,18 +62,17 @@ export function useStudyData() {
     }
   };
 
-  // Helper function to generate all days in a year
+  const getAllSessions = (): StudySession[] => sessions;
+
+  // Helper: semua hari dalam setahun
   const getAllDaysInYear = (year: number): Date[] => {
     const yearStart = startOfYear(new Date(year, 0, 1));
     const yearEnd = endOfYear(new Date(year, 11, 31));
     const daysDiff = differenceInDays(yearEnd, yearStart);
     
-    const allDays: Date[] = [];
-    for (let i = 0; i <= daysDiff; i++) {
-      allDays.push(addDays(yearStart, i));
-    }
-    
-    return allDays;
+    return Array.from({ length: daysDiff + 1 }, (_, i) =>
+      addDays(yearStart, i)
+    );
   };
 
   const getHeatmapData = (): DayData[] => {
@@ -90,43 +88,21 @@ export function useStudyData() {
       const dateStr = format(date, 'yyyy-MM-dd');
       const totalMinutes = sessionsByDate[dateStr] || 0;
       
-      // Fixed level calculation - only level 0 if no study time at all
       let level = 0;
       if (totalMinutes > 0) {
-        level = 1; // Start from 1 when there's any study time
+        level = 1;
         if (totalMinutes >= 30) level = 2;
         if (totalMinutes >= 60) level = 3;
         if (totalMinutes >= 120) level = 4;
         if (totalMinutes >= 180) level = 5;
       }
 
-      return {
-        date: dateStr,
-        totalMinutes,
-        level
-      };
+      return { date: dateStr, totalMinutes, level };
     });
-  };
-
-  const getUserStats = (): UserStats => {
-    const totalSessions = sessions.length;
-    const totalMinutes = sessions.reduce((sum, session) => sum + session.duration, 0);
-    
-    // Calculate streak logic here
-    const currentStreak = calculateCurrentStreak();
-    const longestStreak = calculateLongestStreak();
-
-    return {
-      totalSessions,
-      totalMinutes,
-      currentStreak,
-      longestStreak
-    };
   };
 
   const calculateCurrentStreak = (): number => {
     const sessionDates = [...new Set(sessions.map(s => s.date))].sort().reverse();
-    
     let streak = 0;
     let currentDate = new Date();
     
@@ -136,13 +112,11 @@ export function useStudyData() {
       if (sessionDates.includes(dateStr)) {
         streak++;
       } else {
-        // Allow for today if no session yet, but break on any other gap
         if (i > 0) break;
       }
       
       currentDate = addDays(currentDate, -1);
     }
-    
     return streak;
   };
 
@@ -157,7 +131,6 @@ export function useStudyData() {
       
       if (previousDate) {
         const daysDiff = differenceInDays(currentDate, previousDate);
-        
         if (daysDiff === 1) {
           currentStreak++;
         } else {
@@ -167,18 +140,29 @@ export function useStudyData() {
       } else {
         currentStreak = 1;
       }
-      
       previousDate = currentDate;
     }
-    
     return Math.max(longestStreak, currentStreak);
   };
 
-  return {
-    sessions,
-    loading,
-    addSession,
-    getHeatmapData,
-    getUserStats
+  const getUserStats = (): UserStats => {
+    const totalSessions = sessions.length;
+    const totalMinutes = sessions.reduce((sum, session) => sum + session.duration, 0);
+    const currentStreak = calculateCurrentStreak();
+    const longestStreak = calculateLongestStreak();
+
+    return { totalSessions, totalMinutes, currentStreak, longestStreak };
+  };
+
+  const getTotalMinutes = () => sessions.reduce((acc, s) => acc + s.duration, 0);
+
+  return { 
+    sessions, 
+    loading, 
+    addSession, 
+    getAllSessions, 
+    getHeatmapData, 
+    getUserStats, 
+    getTotalMinutes 
   };
 }
